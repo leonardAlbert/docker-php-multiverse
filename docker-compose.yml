@@ -1,0 +1,78 @@
+version: "3.5"
+
+networks:
+    web:
+      driver: bridge
+      ipam:
+        config:
+          - subnet: 10.8.0.0/16
+
+services:
+
+  nginx:
+    build: ./.docker/nginx
+    restart: unless-stopped
+    container_name: app_nginx
+    working_dir: /app
+    volumes:
+        - .:/app
+        - ./.docker/nginx/configs/default.conf:/etc/nginx/conf.d/default.conf
+        - ./.docker/nginx/configs/map.conf:/etc/nginx/conf.d/map.conf
+        - ./.docker/nginx/configs/nginx.conf:/etc/nginx/nginx.conf
+        - ./.docker/nginx/configs/php.conf:/etc/nginx/php.conf
+    ports:
+      - "80:80"
+      - "443:443"
+    expose:
+     - '80'
+    command: nginx -g 'daemon off;'
+    depends_on:
+      - php56
+      - php74
+      - php81
+    links:
+      - php56
+      - php74
+      - php81
+    networks:
+      web:
+        ipv4_address: 10.8.0.2
+
+  php56:
+    build: ./.docker/php56
+    restart: unless-stopped
+    container_name: app_php56
+    working_dir: /app
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - .:/app
+      - ./.docker/php56/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini
+    networks:
+      web:
+        ipv4_address: 10.8.0.3
+
+  php74:
+    build: ./.docker/php74
+    restart: unless-stopped
+    container_name: app_php74
+    working_dir: /app
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - .:/app
+      - ./.docker/php74/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini
+    networks:
+      web:
+        ipv4_address: 10.8.0.4
+
+  php81:
+    build: ./.docker/php81
+    restart: unless-stopped
+    container_name: app_php81
+    working_dir: /app
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - .:/app
+      - ./.docker/php81/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini
+    networks:
+      web:
+        ipv4_address: 10.8.0.5
